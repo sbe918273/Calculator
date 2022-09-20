@@ -28,9 +28,9 @@ public class LexerMultipleTokensUnitTest {
                 {
                     " cos\r\n4\t^",
                     new Token[] {
-                        new TagToken(TokenTag.COSINE),
+                        new TagToken("COSINE"),
                         new NumberToken(4),
-                        new TagToken(TokenTag.POWER),
+                        new TagToken("POWER"),
                     }
                 },
                 // `Lexer` attempts to interpret the first sign after a number as an operand.
@@ -38,7 +38,7 @@ public class LexerMultipleTokensUnitTest {
                     "30e-1+6",
                     new Token[] {
                         new NumberToken(30e-1),
-                        new TagToken(TokenTag.PLUS),
+                        new TagToken("PLUS"),
                         new NumberToken(6),
                     }
                 },
@@ -47,8 +47,8 @@ public class LexerMultipleTokensUnitTest {
                     "3+^4",
                     new Token[] {
                         new NumberToken(3),
-                        new TagToken(TokenTag.PLUS),
-                        new TagToken(TokenTag.POWER),
+                        new TagToken("PLUS"),
+                        new TagToken("POWER"),
                         new NumberToken(4),
                     },
                 },
@@ -57,7 +57,7 @@ public class LexerMultipleTokensUnitTest {
                     "10e-1+-2",
                     new Token[] {
                         new NumberToken(10e-1),
-                        new TagToken(TokenTag.PLUS),
+                        new TagToken("PLUS"),
                         new NumberToken(-2),
                     },
                 },

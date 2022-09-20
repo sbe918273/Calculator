@@ -3,18 +3,14 @@ package parser;
 import lexer.InvalidTokenException;
 import lexer.Lexer;
 import lexer.Token;
-import lexer.TokenTag;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Stack;
-
 
 /**
  * A class for an SLR parser.
- * @param <T> the tag type for symbols
  */
-public abstract class Parser<T extends SymbolTag> {
+public abstract class Parser {
     // the lexer from which the parser receives tokens
     private final Lexer lexer;
     // a stack of states representing the parser's complete state
@@ -43,67 +39,10 @@ public abstract class Parser<T extends SymbolTag> {
         token = lexer.scan();
         Action action = null;
         while (!(action instanceof AcceptAction)) {
-            TokenTag tag = token == null ? null : token.getTag();
+            String tag = token == null ? null : token.getTag();
             State currentState = stateStack.peek();
             action = currentState.getAction(tag);
             action.execute();
-        }
-    }
-
-    /**
-     * A class to represent state in this parser's automaton.
-     * A state can present the action to execute upon encountering a token tag.
-     * A state can present the next state upon encountering (after a reduction) a nonterminal.
-     */
-    protected class State {
-
-        // a mapping from tags to actions
-        private final HashMap<SymbolTag, Action> actions;
-        // a mapping from nonterminals to next states
-        private final HashMap<NonterminalTag, State> nextStates;
-
-        /**
-         * Initialises both mappings to be empty hashmaps.
-         */
-        public State() {
-            actions = new HashMap<>();
-            nextStates = new HashMap<>();
-        }
-
-        /**
-         * Retrieves the action for a tag.
-         * @param tag a tag
-         * @return an action
-         */
-        public Action getAction(TerminalTag tag) {
-            return actions.get(tag);
-        }
-
-        /**
-         * Retrieves the next state for a nonterminal
-         * @param nonterminal a nonterminal
-         * @return the next state
-         */
-        public State getNextState(NonterminalTag nonterminal) {
-            return nextStates.get(nonterminal);
-        }
-
-        /**
-         * Registers the action for a tag.
-         * @param tag a tag
-         * @param action the action for the tag
-         */
-        public void putAction(TerminalTag tag, Action action) {
-            actions.put(tag, action);
-        }
-
-        /**
-         * Registers the next state for a nonterminal
-         * @param nonterminal a nonterminal
-         * @param state the next state for the nonterminal
-         */
-        public void putNextState(NonterminalTag nonterminal, State state) {
-            nextStates.put(nonterminal, state);
         }
     }
 
@@ -139,7 +78,9 @@ public abstract class Parser<T extends SymbolTag> {
          * @throws InvalidTokenException the lexer encounters an invalid token
          */
         @Override
-        public void execute() throws IOException, InvalidTokenException  {
+        public void execute() throws IOException, InvalidTokenException {
+            // initialise `nextState`'s tag (if not already done) to be `token`
+            nextState.setTag(token.getTag());
             // push the next state to the stack
             stateStack.push(nextState);
             // advance the token
@@ -152,13 +93,13 @@ public abstract class Parser<T extends SymbolTag> {
      */
     protected class ReduceAction extends Action {
 
-        private final Production<NonterminalTag> production;
+        private final Production production;
 
-        public ReduceAction(Production<NonterminalTag> production) {
+        public ReduceAction(Production production) {
             this(null, production);
         }
 
-        public ReduceAction(String name, Production<NonterminalTag> production) {
+        public ReduceAction(String name, Production production) {
             super(name);
             this.production = production;
         }
@@ -168,8 +109,10 @@ public abstract class Parser<T extends SymbolTag> {
             for (int index = 0; index < production.getLength(); index++) {
                 stateStack.pop();
             }
+            String productionTag = production.getTag();
             State currentState = stateStack.peek();
-            State nextState = currentState.getNextState(production.getHead());
+            State nextState = stateStack.peek().getNextState(productionTag);
+            nextState.setTag(productionTag);
             stateStack.push(nextState);
         }
     }

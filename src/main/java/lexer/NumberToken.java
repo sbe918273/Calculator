@@ -1,7 +1,7 @@
 package lexer;
 
 /**
- * A class for a token that has a tag and a double value attribute
+ * A class for a token that has a string tag and a double value attribute
  */
 public class NumberToken implements Token {
 
@@ -21,8 +21,8 @@ public class NumberToken implements Token {
      * @return this token's tag
      */
     @Override
-    public TokenTag getTag() {
-        return TokenTag.NUMBER;
+    public String getTag() {
+        return "NUMBER";
     }
 
     /**
@@ -70,7 +70,7 @@ public class NumberToken implements Token {
     public boolean equals(Object other) {
         // return `true` iff `other` is a `NumberToken` object that has the same tag and value as this token
         if (!(other instanceof NumberToken otherNumberToken)) { return false; }
-        return otherNumberToken.getTag() == getTag() && otherNumberToken.getValue() == getValue();
+        return getTag().equals(otherNumberToken.getTag()) && getValue() == otherNumberToken.getValue();
     }
 
     /**

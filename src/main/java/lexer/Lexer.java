@@ -287,10 +287,10 @@ public class Lexer {
     static protected TagToken getOptionalCharacterToken(Character character) {
         // map `character` to a token and otherwise `null`
         return switch (character) {
-            case '+' -> new TagToken(TokenTag.PLUS);
-            case '-' -> new TagToken(TokenTag.MINUS);
-            case '^' -> new TagToken(TokenTag.POWER);
-            case '!' -> new TagToken(TokenTag.FACTORIAL);
+            case '+' -> new TagToken("PLUS");
+            case '-' -> new TagToken("MINUS");
+            case '^' -> new TagToken("POWER");
+            case '!' -> new TagToken("FACTORIAL");
             default -> null;
         };
     }
@@ -316,7 +316,7 @@ public class Lexer {
         }
         // advance peek
         readCharacter();
-        return new TagToken(TokenTag.COSINE);
+        return new TagToken("COSINE");
     }
 
     /**
@@ -354,8 +354,7 @@ public class Lexer {
         )); }
 
         // set `wasNumber` iff the token is a number token
-        TokenTag tag = token.getTag();
-        wasNumber = tag == TokenTag.NUMBER;
+        wasNumber = token.getTag().equals("NUMBER");
         return token;
     }
 

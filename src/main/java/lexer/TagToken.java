@@ -1,17 +1,17 @@
 package lexer;
 
 /**
- * A class for a token that only has a tag.
+ * A class for a token that only has a string tag.
  */
 public class TagToken implements Token {
 
-    private final TokenTag tag;
+    private final String tag;
 
     /**
-     * A constructor that initialises this token tag.
+     * A constructor that initialises this token's tag.
      * @param tag this token's tag
      */
-    public TagToken(TokenTag tag) {
+    public TagToken(String tag) {
         this.tag = tag;
     }
 
@@ -19,7 +19,7 @@ public class TagToken implements Token {
      * @return this token's tag
      */
     @Override
-    public TokenTag getTag() {
+    public String getTag() {
         return tag;
     }
 
@@ -42,6 +42,6 @@ public class TagToken implements Token {
     public boolean equals(Object other) {
         // return `true` iff `other` is a `TagToken` object that has the same tag as this token
         if (!(other instanceof TagToken otherTagToken)) { return false; }
-        return otherTagToken.getTag() == getTag();
+        return getTag().equals(otherTagToken.getTag());
     }
 }

@@ -26,15 +26,15 @@ public class LexerCharacterLexemeUnitTest {
         // `Lexer` correctly recognises a ... token.
         return Arrays.asList(new Object[][] {
             // plus
-            {"+", new TagToken(TokenTag.PLUS)},
+            {"+", new TagToken("PLUS")},
             // minus
-            {"-", new TagToken(TokenTag.MINUS)},
+            {"-", new TagToken("MINUS")},
             // power
-            {"^", new TagToken(TokenTag.POWER)},
+            {"^", new TagToken("POWER")},
             // cosine
-            {"cos", new TagToken(TokenTag.COSINE)},
+            {"cos", new TagToken("COSINE")},
             // factorial
-            {"!", new TagToken(TokenTag.FACTORIAL)}
+            {"!", new TagToken("FACTORIAL")},
         });
     }
 

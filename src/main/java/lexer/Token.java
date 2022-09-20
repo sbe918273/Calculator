@@ -1,14 +1,14 @@
 package lexer;
 
 /**
- * An interface for a token that has a tag.
+ * An interface for a token that has a string tag.
  */
 public interface Token {
 
     /**
      * @return this token's tag
      */
-    TokenTag getTag();
+    String getTag();
 
     /**
      * Determines whether this token is fuzzily equal to another. Defaults to the existing `equals` method.
