@@ -25,15 +25,15 @@ public class TokenStringsUnitTest {
         // The `toString` method is correct for a...
         return Arrays.asList(new Object[][] {
                 // plus token
-                {new TagToken("PLUS"), "[PLUS]"},
+                {new PlusToken(), "[PLUS]"},
                 // minus token
-                {new TagToken("MINUS"), "[MINUS]"},
+                {new MinusToken(), "[MINUS]"},
                 // power token
-                {new TagToken("POWER"), "[POWER]"},
+                {new PowerToken(), "[POWER]"},
                 // cosine token
-                {new TagToken("COSINE"), "[COSINE]"},
+                {new CosineToken(), "[COSINE]"},
                 // factorial token
-                {new TagToken("FACTORIAL"), "[FACTORIAL]"},
+                {new FactorialToken(), "[FACTORIAL]"},
                 // number token
                 {new NumberToken(-1.3e3), "[NUMBER] value=-1300.0"}
         });

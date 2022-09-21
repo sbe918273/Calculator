@@ -28,9 +28,9 @@ public class ExpressionLexerMultipleTokensUnitTest {
                 {
                     " cos\r\n4\t^",
                     new Token[] {
-                        new TagToken(ExpressionTokenTag.COSINE),
+                        new CosineToken(),
                         new NumberToken(4),
-                        new TagToken(ExpressionTokenTag.POWER),
+                        new PowerToken(),
                     }
                 },
                 // `ExpressionLexer` attempts to interpret the first sign after a number as an operand.
@@ -38,7 +38,7 @@ public class ExpressionLexerMultipleTokensUnitTest {
                     "30e-1+6",
                     new Token[] {
                         new NumberToken(30e-1),
-                        new TagToken(ExpressionTokenTag.PLUS),
+                        new PlusToken(),
                         new NumberToken(6),
                     }
                 },
@@ -47,8 +47,8 @@ public class ExpressionLexerMultipleTokensUnitTest {
                     "3+^4",
                     new Token[] {
                         new NumberToken(3),
-                        new TagToken(ExpressionTokenTag.PLUS),
-                        new TagToken(ExpressionTokenTag.POWER),
+                        new PlusToken(),
+                        new PowerToken(),
                         new NumberToken(4),
                     },
                 },
@@ -57,7 +57,7 @@ public class ExpressionLexerMultipleTokensUnitTest {
                     "10e-1+-2",
                     new Token[] {
                         new NumberToken(10e-1),
-                        new TagToken(ExpressionTokenTag.PLUS),
+                        new PlusToken(),
                         new NumberToken(-2),
                     },
                 },

@@ -1,5 +1,8 @@
 package lexer;
 
+/**
+ * The tag of a token that an `ExpressionLexer` generates.
+ */
 public enum ExpressionTokenTag {
     PLUS,
     MINUS,

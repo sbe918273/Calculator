@@ -14,9 +14,9 @@ import org.junit.runner.RunWith;
 public class ExpressionLexerCharactersUnitTest {
 
     private final String lexeme;
-    private final TagToken expectedToken;
+    private final Token<ExpressionTokenTag> expectedToken;
 
-    public ExpressionLexerCharactersUnitTest(String lexeme, TagToken expectedToken) {
+    public ExpressionLexerCharactersUnitTest(String lexeme, Token<ExpressionTokenTag> expectedToken) {
         this.lexeme = lexeme;
         this.expectedToken = expectedToken;
     }
@@ -26,15 +26,15 @@ public class ExpressionLexerCharactersUnitTest {
         // `ExpressionLexer` correctly recognises a ... token.
         return Arrays.asList(new Object[][] {
             // plus
-            {"+", new TagToken(ExpressionTokenTag.PLUS)},
+            {"+", new PlusToken()},
             // minus
-            {"-", new TagToken(ExpressionTokenTag.MINUS)},
+            {"-", new MinusToken()},
             // power
-            {"^", new TagToken(ExpressionTokenTag.POWER)},
+            {"^", new PowerToken()},
             // cosine
-            {"cos", new TagToken(ExpressionTokenTag.COSINE)},
+            {"cos", new CosineToken()},
             // factorial
-            {"!", new TagToken(ExpressionTokenTag.FACTORIAL)},
+            {"!", new FactorialToken()},
         });
     }
 

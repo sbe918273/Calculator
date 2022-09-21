@@ -1,10 +1,13 @@
 package parser;
 
+import java.util.List;
+
 /**
  * A class for a production: a nonterminal head mapped to a symbol sequence body.
+ * @param <TerminalTag> the type of tag for the constituent tokens of the nonterminal head
  * @param <NonterminalTag> the type of tag for the nonterminal head
  */
-public class Production<NonterminalTag> extends OptionallyNamed {
+abstract public class Production<TerminalTag, NonterminalTag> extends OptionallyNamed {
 
     // this production's tag
     private final NonterminalTag tag;
@@ -45,4 +48,13 @@ public class Production<NonterminalTag> extends OptionallyNamed {
     public int getLength() {
         return length;
     }
+
+    /**
+     * Creates the nonterminal head of this production from its symbol sequence.
+     * @param children the children of this production's head
+     * @return the resulting nonterminal
+     */
+    abstract public Nonterminal<TerminalTag, NonterminalTag> createNonterminal(
+        List<Symbol<TerminalTag, NonterminalTag>> children
+    );
 }

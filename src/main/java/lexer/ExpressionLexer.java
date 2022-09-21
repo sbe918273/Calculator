@@ -270,9 +270,9 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
      * @return a found token and otherwise `null`
      * @throws IOException the reader throws an IO exception
      */
-    protected TagToken getOptionalCharacterToken() throws IOException {
+    protected Token<ExpressionTokenTag> getOptionalCharacterToken() throws IOException {
         // map `peek` to a token and otherwise `null`
-        TagToken tagToken = getOptionalCharacterToken(peek);
+        Token<ExpressionTokenTag>  tagToken = getOptionalCharacterToken(peek);
         // advance `peek` iff it produced a `token`
         if (tagToken != null) {
             readCharacter();
@@ -284,13 +284,13 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
      * Attempts to retrieve a character token from an explicit character.
      * @return a found token and otherwise `null`
      */
-    static protected TagToken getOptionalCharacterToken(Character character) {
+    static protected Token<ExpressionTokenTag> getOptionalCharacterToken(Character character) {
         // map `character` to a token and otherwise `null`
         return switch (character) {
-            case '+' -> new TagToken(ExpressionTokenTag.PLUS);
-            case '-' -> new TagToken(ExpressionTokenTag.MINUS);
-            case '^' -> new TagToken(ExpressionTokenTag.POWER);
-            case '!' -> new TagToken(ExpressionTokenTag.FACTORIAL);
+            case '+' -> new PlusToken();
+            case '-' -> new MinusToken();
+            case '^' -> new PowerToken();
+            case '!' -> new FactorialToken();
             default -> null;
         };
     }
@@ -301,7 +301,7 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
      * @throws IOException the reader throws an IO exception
      * @throws IncompleteCosineException the input starts with 'c' but does not continue to produce "cos"
      */
-    protected TagToken getOptionalCosineToken() throws IOException, IncompleteCosineException {
+    protected CosineToken getOptionalCosineToken() throws IOException, IncompleteCosineException {
         // return `null` iff the input does not start with 'c'
         if (peek != 'c') {
             return null;
@@ -316,7 +316,7 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
         }
         // advance peek
         readCharacter();
-        return new TagToken(ExpressionTokenTag.COSINE);
+        return new CosineToken();
     }
 
     /**

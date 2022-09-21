@@ -18,7 +18,7 @@ public class NumberToken implements Token<ExpressionTokenTag> {
     }
 
     /**
-     * @return this token's tag (defaults to `ExpressionTokenTag.NUMBER`)
+     * @return this token's fixed tag: `ExpressionTokenTag.NUMBER`
      */
     @Override
     public ExpressionTokenTag getTag() {
@@ -52,17 +52,14 @@ public class NumberToken implements Token<ExpressionTokenTag> {
      * @return whether this token is fuzzily equal to the object
      */
     public boolean fuzzyEquals(Object other, double delta) {
-        // return `true` iff `other` is a `NumberToken` object that has the same tag and the tokens' values absolutely
-        // differ by less than a delta
+        // return `true` iff `other` is a `NumberToken` object whose value absolutely differs by less than a delta
         if (!(other instanceof NumberToken otherNumberToken)) { return false; }
-        return (
-                otherNumberToken.getTag() == getTag() &&
-                Math.abs(otherNumberToken.getValue() - getValue()) <= delta
-        );
+        return Math.abs(otherNumberToken.getValue() - getValue()) <= delta;
     }
 
     /**
-     * Determines whether this token is structurally equal (has the same value and tag as) to another object.
+     * Determines whether this token is structurally equal to another object.
+     * Equivalently, checks whether the other object is a number token and its value is equal to that of this token.
      * @param other an object
      * @return whether this token is equal to the object
      */
@@ -70,7 +67,7 @@ public class NumberToken implements Token<ExpressionTokenTag> {
     public boolean equals(Object other) {
         // return `true` iff `other` is a `NumberToken` object that has the same tag and value as this token
         if (!(other instanceof NumberToken otherNumberToken)) { return false; }
-        return getTag().equals(otherNumberToken.getTag()) && getValue() == otherNumberToken.getValue();
+        return getValue() == otherNumberToken.getValue();
     }
 
     /**
