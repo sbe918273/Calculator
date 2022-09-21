@@ -11,19 +11,19 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runner.RunWith;
 
 @RunWith(Parameterized.class)
-public class LexerExceptionUnitTest {
+public class ExpressionLexerExceptionUnitTest {
 
     private final String inputString;
     private final Class<InvalidTokenException> exceptionClass;
 
-    public LexerExceptionUnitTest(String inputString, Class<InvalidTokenException> expectedExceptionClass) {
+    public ExpressionLexerExceptionUnitTest(String inputString, Class<InvalidTokenException> expectedExceptionClass) {
         this.inputString = inputString;
         this.exceptionClass = expectedExceptionClass;
     }
 
     @Parameters
     public static List<Object[]> getParameters() {
-        // `Lexer` throws an...
+        // `ExpressionLexer` throws an...
         return Arrays.asList(new Object[][] {
                 // `EmptyNumberException` if a number has a decimal point but neither integral nor fractional parts
                 {".", EmptyNumberException.class},
@@ -41,9 +41,9 @@ public class LexerExceptionUnitTest {
     }
 
     @Test
-    public void testLexerExceptions() throws IOException {
+    public void testExpressionLexerExceptions() throws IOException {
         // ARRANGE
-        Lexer lexer = new Lexer(inputString);
+        ExpressionLexer lexer = new ExpressionLexer(inputString);
         // ACTION
         // ASSERT
         Assert.assertThrows(

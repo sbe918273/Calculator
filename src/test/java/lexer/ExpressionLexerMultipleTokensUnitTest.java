@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.Arrays;
 
 @RunWith(Parameterized.class)
-public class LexerMultipleTokensUnitTest {
+public class ExpressionLexerMultipleTokensUnitTest {
 
     private final String inputString;
-    private final Token[] expectedTokens;
+    private final Token<ExpressionTokenTag>[] expectedTokens;
 
-    public LexerMultipleTokensUnitTest(String inputString, Token[] expectedTokens) {
+    public ExpressionLexerMultipleTokensUnitTest(String inputString, Token<ExpressionTokenTag>[] expectedTokens) {
         this.inputString = inputString;
         this.expectedTokens = expectedTokens;
     }
@@ -24,40 +24,40 @@ public class LexerMultipleTokensUnitTest {
     @Parameters
     public static List<Object[]> getParameters() {
         return Arrays.asList(new Object[][] {
-                // `Lexer` skips whitespace.
+                // `ExpressionLexer` skips whitespace.
                 {
                     " cos\r\n4\t^",
                     new Token[] {
-                        new TagToken("COSINE"),
+                        new TagToken(ExpressionTokenTag.COSINE),
                         new NumberToken(4),
-                        new TagToken("POWER"),
+                        new TagToken(ExpressionTokenTag.POWER),
                     }
                 },
-                // `Lexer` attempts to interpret the first sign after a number as an operand.
+                // `ExpressionLexer` attempts to interpret the first sign after a number as an operand.
                 {
                     "30e-1+6",
                     new Token[] {
                         new NumberToken(30e-1),
-                        new TagToken("PLUS"),
+                        new TagToken(ExpressionTokenTag.PLUS),
                         new NumberToken(6),
                     }
                 },
-                // `Lexer` can interpret the first sign after an operand as being an operand.
+                // `ExpressionLexer` can interpret the first sign after an operand as being an operand.
                 {
                     "3+^4",
                     new Token[] {
                         new NumberToken(3),
-                        new TagToken("PLUS"),
-                        new TagToken("POWER"),
+                        new TagToken(ExpressionTokenTag.PLUS),
+                        new TagToken(ExpressionTokenTag.POWER),
                         new NumberToken(4),
                     },
                 },
-                // `Lexer` attempts to interpret the last sign after a number to be that of a number.
+                // `ExpressionLexer` attempts to interpret the last sign after a number to be that of a number.
                 {
                     "10e-1+-2",
                     new Token[] {
                         new NumberToken(10e-1),
-                        new TagToken("PLUS"),
+                        new TagToken(ExpressionTokenTag.PLUS),
                         new NumberToken(-2),
                     },
                 },
@@ -65,11 +65,11 @@ public class LexerMultipleTokensUnitTest {
     }
 
     @Test
-    public void testLexerMultipleTokens() throws IOException, InvalidTokenException {
+    public void testExpressionLexerMultipleTokens() throws IOException, InvalidTokenException {
         // ARRANGE
-        Lexer lexer = new Lexer(inputString);
+        ExpressionLexer expressionLexer = new ExpressionLexer(inputString);
         // ACTION
-        Token[] observedTokens = lexer.completeScan();
+        Token<ExpressionTokenTag>[] observedTokens = expressionLexer.completeScan();
         // ASSERT
         Assert.assertTrue(Token.fuzzyArrayEquals(observedTokens, expectedTokens));
     }

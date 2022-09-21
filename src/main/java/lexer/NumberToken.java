@@ -1,9 +1,9 @@
 package lexer;
 
 /**
- * A class for a token that has a string tag and a double value attribute
+ * A class for a token that has a tag (in `ExpressionTokenTag`) and a double value attribute
  */
-public class NumberToken implements Token {
+public class NumberToken implements Token<ExpressionTokenTag> {
 
     private final double value;
     // the relative (to the expected value) tolerance for value differences in fuzzy equality
@@ -18,11 +18,11 @@ public class NumberToken implements Token {
     }
 
     /**
-     * @return this token's tag
+     * @return this token's tag (defaults to `ExpressionTokenTag.NUMBER`)
      */
     @Override
-    public String getTag() {
-        return "NUMBER";
+    public ExpressionTokenTag getTag() {
+        return ExpressionTokenTag.NUMBER;
     }
 
     /**

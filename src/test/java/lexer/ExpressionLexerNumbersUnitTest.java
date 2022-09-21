@@ -11,19 +11,19 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runner.RunWith;
 
 @RunWith(Parameterized.class)
-public class LexerNumberLexemeUnitTest {
+public class ExpressionLexerNumbersUnitTest {
 
     private final String lexeme;
     private final NumberToken expectedToken;
 
-    public LexerNumberLexemeUnitTest(String lexeme, NumberToken expectedToken) {
+    public ExpressionLexerNumbersUnitTest(String lexeme, NumberToken expectedToken) {
         this.lexeme = lexeme;
         this.expectedToken = expectedToken;
     }
 
     @Parameters
     public static List<Object[]> getParameters() {
-        // `Lexer` correctly recognises a(n)...
+        // `ExpressionLexer` correctly recognises a(n)...
         return Arrays.asList(new Object[][] {
             // unsigned integer
             {"56", new NumberToken(56)},
@@ -63,11 +63,11 @@ public class LexerNumberLexemeUnitTest {
     }
 
     @Test
-    public void testLexerNumberLexemes() throws IOException, InvalidTokenException {
+    public void testExpressionLexerNumbers() throws IOException, InvalidTokenException {
         // ARRANGE
-        Lexer lexer = new Lexer(lexeme);
+        ExpressionLexer lexer = new ExpressionLexer(lexeme);
         // ACTION
-        Token observedToken = lexer.scan();
+        Token<ExpressionTokenTag> observedToken = lexer.scan();
         // ASSERT
         Assert.assertTrue(expectedToken.fuzzyEquals(observedToken));
         // assert that the lexer recognises no additional tokens

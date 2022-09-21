@@ -1,17 +1,17 @@
 package lexer;
 
 /**
- * A class for a token that only has a string tag.
+ * A class for a token that only has a tag (in `ExpressionTokenTag`).
  */
-public class TagToken implements Token {
+public class TagToken implements Token<ExpressionTokenTag> {
 
-    private final String tag;
+    private final ExpressionTokenTag tag;
 
     /**
      * A constructor that initialises this token's tag.
      * @param tag this token's tag
      */
-    public TagToken(String tag) {
+    public TagToken(ExpressionTokenTag tag) {
         this.tag = tag;
     }
 
@@ -19,7 +19,7 @@ public class TagToken implements Token {
      * @return this token's tag
      */
     @Override
-    public String getTag() {
+    public ExpressionTokenTag getTag() {
         return tag;
     }
 

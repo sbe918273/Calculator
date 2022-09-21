@@ -11,42 +11,42 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runner.RunWith;
 
 @RunWith(Parameterized.class)
-public class LexerCharacterLexemeUnitTest {
+public class ExpressionLexerCharactersUnitTest {
 
     private final String lexeme;
     private final TagToken expectedToken;
 
-    public LexerCharacterLexemeUnitTest(String lexeme, TagToken expectedToken) {
+    public ExpressionLexerCharactersUnitTest(String lexeme, TagToken expectedToken) {
         this.lexeme = lexeme;
         this.expectedToken = expectedToken;
     }
 
     @Parameters
     public static List<Object[]> getParameters() {
-        // `Lexer` correctly recognises a ... token.
+        // `ExpressionLexer` correctly recognises a ... token.
         return Arrays.asList(new Object[][] {
             // plus
-            {"+", new TagToken("PLUS")},
+            {"+", new TagToken(ExpressionTokenTag.PLUS)},
             // minus
-            {"-", new TagToken("MINUS")},
+            {"-", new TagToken(ExpressionTokenTag.MINUS)},
             // power
-            {"^", new TagToken("POWER")},
+            {"^", new TagToken(ExpressionTokenTag.POWER)},
             // cosine
-            {"cos", new TagToken("COSINE")},
+            {"cos", new TagToken(ExpressionTokenTag.COSINE)},
             // factorial
-            {"!", new TagToken("FACTORIAL")},
+            {"!", new TagToken(ExpressionTokenTag.FACTORIAL)},
         });
     }
 
     @Test
-    public void testLexerCharacterLexemes() throws IOException, InvalidTokenException {
+    public void testExpressionLexerCharacters() throws IOException, InvalidTokenException {
         // ARRANGE
-        Lexer lexer = new Lexer(lexeme);
+        ExpressionLexer expressionLexer = new ExpressionLexer(lexeme);
         // ACTION
-        Token observedToken = lexer.scan();
+        Token<ExpressionTokenTag> observedToken = expressionLexer.scan();
         // ASSERT
         Assert.assertEquals(observedToken, expectedToken);
         // assert that the lexer recognises no additional tokens
-        Assert.assertNull(lexer.scan());
+        Assert.assertNull(expressionLexer.scan());
     }
 }

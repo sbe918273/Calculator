@@ -11,12 +11,12 @@ import java.util.Arrays;
 import java.util.List;
 
 @RunWith(Parameterized.class)
-public class LexerIntegrationTest {
+public class ExpressionLexerIntegrationTest {
 
     private final String inputString;
-    private final Token[] expectedTokens;
+    private final Token<ExpressionTokenTag>[] expectedTokens;
 
-    public LexerIntegrationTest(String inputString, Token[] expectedTokens) {
+    public ExpressionLexerIntegrationTest(String inputString, Token<ExpressionTokenTag>[] expectedTokens) {
         this.inputString = inputString;
         this.expectedTokens = expectedTokens;
     }
@@ -27,35 +27,35 @@ public class LexerIntegrationTest {
             {
                 "cos90!+\t3.45e-9\n--87^4 +.0001!4.e+1",
                 new Token[] {
-                    new TagToken("COSINE"),
+                    new TagToken(ExpressionTokenTag.COSINE),
                     new NumberToken(90),
-                    new TagToken("FACTORIAL"),
-                    new TagToken("PLUS"),
+                    new TagToken(ExpressionTokenTag.FACTORIAL),
+                    new TagToken(ExpressionTokenTag.PLUS),
                     new NumberToken(3.45e-9),
-                    new TagToken("MINUS"),
+                    new TagToken(ExpressionTokenTag.MINUS),
                     new NumberToken(-87),
-                    new TagToken("POWER"),
+                    new TagToken(ExpressionTokenTag.POWER),
                     new NumberToken(4),
-                    new TagToken("PLUS"),
+                    new TagToken(ExpressionTokenTag.PLUS),
                     new NumberToken(.0001),
-                    new TagToken("FACTORIAL"),
+                    new TagToken(ExpressionTokenTag.FACTORIAL),
                     new NumberToken(4.e+1),
                 },
             },
             {
                 "!+2.46--45e-4-45!cos",
                 new Token[] {
-                        new TagToken("FACTORIAL"),
+                        new TagToken(ExpressionTokenTag.FACTORIAL),
                         new NumberToken(2.46),
-                        new TagToken("MINUS"),
+                        new TagToken(ExpressionTokenTag.MINUS),
                         new NumberToken(-45e-4),
-                        new TagToken("MINUS"),
+                        new TagToken(ExpressionTokenTag.MINUS),
                         new NumberToken(45),
-                        new TagToken("FACTORIAL"),
-                        new TagToken("COSINE"),
+                        new TagToken(ExpressionTokenTag.FACTORIAL),
+                        new TagToken(ExpressionTokenTag.COSINE),
                 },
             },
-            // `Lexer` can handle an empty string.
+            // `ExpressionLexer` can handle an empty string.
             {
                 "",
                 new Token[] {},
@@ -64,11 +64,11 @@ public class LexerIntegrationTest {
     }
 
     @Test
-    public void testLexer() throws IOException, InvalidTokenException {
+    public void testExpressionLexer() throws IOException, InvalidTokenException {
         // ARRANGE
-        Lexer lexer = new Lexer(inputString);
+        ExpressionLexer expressionLexer = new ExpressionLexer(inputString);
         // ACTION
-        Token[] observedTokens = lexer.completeScan();
+        Token<ExpressionTokenTag>[] observedTokens = expressionLexer.completeScan();
         // ASSERT
         Assert.assertTrue(Token.fuzzyArrayEquals(observedTokens, expectedTokens));
     }

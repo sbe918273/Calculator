@@ -1,14 +1,15 @@
 package lexer;
 
 /**
- * An interface for a token that has a string tag.
+ * An interface for a token that has a tag.
+ * @param <T> a type of tag
  */
-public interface Token {
+public interface Token<T> {
 
     /**
      * @return this token's tag
      */
-    String getTag();
+    T getTag();
 
     /**
      * Determines whether this token is fuzzily equal to another. Defaults to the existing `equals` method.
@@ -23,9 +24,10 @@ public interface Token {
      * Determines whether two token arrays are element-wise fuzzily equal.
      * @param observedTokens an observed token array
      * @param expectedTokens an expected token array
+     * @param <T> a type of tag
      * @return whether the arrays are fuzzily equal
      */
-    static boolean fuzzyArrayEquals(Token[] observedTokens, Token[] expectedTokens) {
+    static <T>boolean fuzzyArrayEquals(Token<T>[] observedTokens, Token<T>[] expectedTokens) {
         // return `true` iff both arrays are `null`
         if (expectedTokens == null) {
             return observedTokens == null;
@@ -34,8 +36,8 @@ public interface Token {
             if (expectedTokens.length != observedTokens.length) { return false; }
             // return `false` if a token in `expectedTokens` does not fuzzy equal its matching token in `observedTokens`
             for (int index = 0; index < expectedTokens.length; index++) {
-                Token expectedToken = expectedTokens[index];
-                Token observedToken = observedTokens[index];
+                Token<T> expectedToken = expectedTokens[index];
+                Token<T> observedToken = observedTokens[index];
                 // `null` tokens are fuzzily equal
                 if (expectedToken == null) {
                     if (observedToken != null) { return false; }
