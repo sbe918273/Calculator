@@ -14,37 +14,51 @@ import parser.symbol.ExpressionNonterminal;
 import parser.symbol.ExpressionNonterminalTag;
 import parser.symbol.Nonterminal;
 
+/**
+ * A class to represent an SLR parser that reads an expression (or the tokens thereof) to generate a parse tree.
+ * Initialises the states and transitions of the automaton that the `Parser` super object drives.
+ */
 public class ExpressionParser extends Parser<ExpressionTokenTag, ExpressionNonterminalTag> {
 
-    private static final List<Production<ExpressionTokenTag, ExpressionNonterminalTag>> productions;
-
-    static {
-        productions = List.of(
-            // E -> E + E
-            new PlusProduction(),
-            // E -> E - E
-            new MinusProduction(),
-            // E -> E ^ E
-            new PowerProduction(),
-            // E -> cos E
-            new CosineProduction(),
-            // E -> E!
-            new FactorialProduction(),
-            // E -> number
-            new NumberProduction()
-        );
-    }
-
+    /**
+     * Initialises this parser's lexer to be an `ExpressionLexer` reading a string.
+     * @param inputString an input string
+     * @throws IOException the lexer throws an IO exception.
+     */
     public ExpressionParser(String inputString) throws IOException {
         this(new ExpressionLexer(inputString));
     }
 
+    /**
+     * Initialises this parser's lexer (which outputs tokens of tag type `ExpressionTokenTag`).
+     * @param expressionLexer a lexer that outputs tokens of tag type `ExpressionTokenTag`
+     */
     public ExpressionParser(Lexer<ExpressionTokenTag> expressionLexer) {
         super(expressionLexer);
     }
 
+    /**
+     * Initialises the parser's state by creating all the states (and the behaviour and transitions thereof) and
+     * respectively pushing to the state and symbol stacks a state and symbol that initialises the automaton.
+     */
     @Override
     protected void initialise() {
+        // initialise the ... production
+        List<Production<ExpressionTokenTag, ExpressionNonterminalTag>> productions = List.of(
+                // plus
+                new PlusProduction(),
+                // minus
+                new MinusProduction(),
+                // power
+                new PowerProduction(),
+                // cosine
+                new CosineProduction(),
+                // factorial
+                new FactorialProduction(),
+                // number
+                new NumberProduction()
+        );
+
         // initialise the state list to be empty
         final List<State<ExpressionTokenTag, ExpressionNonterminalTag>> states = new ArrayList<>();
 
@@ -175,53 +189,85 @@ public class ExpressionParser extends Parser<ExpressionTokenTag, ExpressionNonte
 
         // eighth
         states.get(7).putAction(ExpressionTokenTag.PLUS, new ReduceAction(productions.get(4)));
+        // The minus operator has a greater precedence than the plus operator.
         states.get(7).putAction(ExpressionTokenTag.MINUS, new ReduceAction(productions.get(4)));
         states.get(7).putAction(ExpressionTokenTag.POWER, new ReduceAction(productions.get(4)));
+
         states.get(7).putAction(ExpressionTokenTag.FACTORIAL, new ReduceAction(productions.get(4)));
         states.get(7).putAction(null, new ReduceAction(productions.get(4)));
 
         // ninth
+        // The cosine operator has a greater precedence than the plus operator.
         states.get(8).putAction(ExpressionTokenTag.PLUS, new ReduceAction(productions.get(3)));
+        // The cosine operator has a greater precedence than the minus operator.
         states.get(8).putAction(ExpressionTokenTag.MINUS, new ReduceAction(productions.get(3)));
+        // The cosine operator has a greater precedence than the power operator.
         states.get(8).putAction(ExpressionTokenTag.POWER, new ReduceAction(productions.get(3)));
+        // The factorial operator has a greater precedence than the cosine operator.
         states.get(8).putAction(ExpressionTokenTag.FACTORIAL, new ShiftAction(states.get(7)));
         states.get(8).putAction(null, new ReduceAction(productions.get(3)));
 
         // tenth
+        // The plus operator is left associative.
         states.get(9).putAction(ExpressionTokenTag.PLUS, new ReduceAction(productions.get(0)));
+        // The minus operator has a greater precedence than the plus operator.
         states.get(9).putAction(ExpressionTokenTag.MINUS, new ShiftAction(states.get(5)));
+        // The power operator has a greater precedence than the plus operator.
         states.get(9).putAction(ExpressionTokenTag.POWER, new ShiftAction(states.get(6)));
+        // The factorial operator has a greater precedence than the plus operator.
         states.get(9).putAction(ExpressionTokenTag.FACTORIAL, new ShiftAction(states.get(7)));
         states.get(9).putAction(null, new ReduceAction(productions.get(0)));
 
         // eleventh
+        // The minus operator has a greater precedence than the plus operator.
         states.get(10).putAction(ExpressionTokenTag.PLUS, new ReduceAction(productions.get(1)));
+        // The minus operator is left associative.
         states.get(10).putAction(ExpressionTokenTag.MINUS, new ReduceAction(productions.get(1)));
+        // The power operator has a greater precedence than the minus operator.
         states.get(10).putAction(ExpressionTokenTag.POWER, new ShiftAction(states.get(6)));
+        // The factorial operator has a greater precedence than the minus operator.
         states.get(10).putAction(ExpressionTokenTag.FACTORIAL, new ShiftAction(states.get(7)));
         states.get(10).putAction(null, new ReduceAction(productions.get(1)));
 
         // twelfth
+        // The power operator has a greater precedence than the plus operator.
         states.get(11).putAction(ExpressionTokenTag.PLUS, new ReduceAction(productions.get(2)));
+        // The power operator has a greater precedence than the minus operator.
         states.get(11).putAction(ExpressionTokenTag.MINUS, new ReduceAction(productions.get(2)));
+        // The power operator is left associative.
         states.get(11).putAction(ExpressionTokenTag.POWER, new ShiftAction(states.get(6)));
+        // The factorial operator has a greater precedence than the power operator.
         states.get(11).putAction(ExpressionTokenTag.FACTORIAL, new ShiftAction(states.get(7)));
         states.get(11).putAction(null, new ReduceAction(productions.get(2)));
 
+        // initialise the driver's state
         // remove all existing states from `stateStack`
         stateStack.clear();
         // push the initial state to the stack of states
         stateStack.add(states.get(0));
+        // push an initial `null` symbol to the stack of symbols
         symbolStack.add(null);
     }
 
+    /**
+     * Generates a parse tree (represented by a nonterminal) from an input string.
+     * We use an `ExpressionLexer` as the lexer.
+     * @param inputString an input string
+     * @return the resulting parse tree
+     * @throws IOException the lexer throws an IO exception
+     * @throws IllegalLexemeException the lexer throws an `IllegalLexemeException`
+     * @throws IllegalTokenException the lexer throws an `IllegalTokenException`
+     */
     public static ExpressionNonterminal parse(String inputString) throws
         IOException,
         IllegalLexemeException,
         IllegalTokenException
     {
+        // create an `ExpressionParser` to parse the input string
         ExpressionParser expressionParser = new ExpressionParser(inputString);
+        // execute the `ExpressionParser`'s SLR parsing algorithm and retrieve the resulting parse tree
         Nonterminal<ExpressionTokenTag, ExpressionNonterminalTag> nonterminal = expressionParser.run();
+        // assert that the nonterminal is an `ExpressionNonterminal` (as ensured by the productions' return types)
         if (nonterminal instanceof ExpressionNonterminal expressionNonterminal) {
             return expressionNonterminal;
         }

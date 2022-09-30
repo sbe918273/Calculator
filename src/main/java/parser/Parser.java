@@ -8,7 +8,6 @@ import lexer.IllegalLexemeException;
 import lexer.Lexer;
 import lexer.token.Token;
 
-import main.UnpositionedException;
 import parser.production.Production;
 import parser.symbol.Nonterminal;
 import parser.symbol.Symbol;
