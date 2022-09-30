@@ -1,5 +1,7 @@
 package lexer;
 
+import lexer.token.Token;
+
 import java.io.IOException;
 
 /**
@@ -12,7 +14,17 @@ public interface Lexer<TokenTag> {
      * Returns `null` if the lexer reaches its input's end.
      * @return a found token
      * @throws IOException the reader throws an IO exception
-     * @throws InvalidTokenException the current input produces an invalid token
+     * @throws IllegalLexemeException the current input produces an invalid token
      */
-    Token<TokenTag> scan() throws IOException, InvalidTokenException;
+    Token<TokenTag> scan() throws IOException, IllegalLexemeException;
+
+    /**
+     * @return the number of the current line
+     */
+    int getLineNumber();
+
+    /**
+     * @return the number of the current character on its line
+     */
+    int getCharacterNumber();
 }

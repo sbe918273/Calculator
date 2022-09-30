@@ -1,5 +1,6 @@
 package lexer;
 
+import lexer.token.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,9 +15,9 @@ import java.util.List;
 public class ExpressionLexerIntegrationTest {
 
     private final String inputString;
-    private final Token<ExpressionTokenTag>[] expectedTokens;
+    private final List<Token<ExpressionTokenTag>> expectedTokens;
 
-    public ExpressionLexerIntegrationTest(String inputString, Token<ExpressionTokenTag>[] expectedTokens) {
+    public ExpressionLexerIntegrationTest(String inputString, List<Token<ExpressionTokenTag>> expectedTokens) {
         this.inputString = inputString;
         this.expectedTokens = expectedTokens;
     }
@@ -26,7 +27,7 @@ public class ExpressionLexerIntegrationTest {
         return Arrays.asList(new Object[][] {
             {
                 "cos90!+\t3.45e-9\n--87^4 +.0001!4.e+1",
-                new Token[] {
+                List.of(
                     new CosineToken(),
                     new NumberToken(90),
                     new FactorialToken(),
@@ -39,12 +40,12 @@ public class ExpressionLexerIntegrationTest {
                     new PlusToken(),
                     new NumberToken(.0001),
                     new FactorialToken(),
-                    new NumberToken(4.e+1),
-                },
+                    new NumberToken(4.e+1)
+                ),
             },
             {
                 "!+2.46--45e-4-45!cos",
-                new Token[] {
+                List.of(
                         new FactorialToken(),
                         new NumberToken(2.46),
                         new MinusToken(),
@@ -52,24 +53,24 @@ public class ExpressionLexerIntegrationTest {
                         new MinusToken(),
                         new NumberToken(45),
                         new FactorialToken(),
-                        new CosineToken(),
-                },
+                        new CosineToken()
+                ),
             },
             // `ExpressionLexer` can handle an empty string.
             {
                 "",
-                new Token[] {},
+                List.of(),
             },
         });
     }
 
     @Test
-    public void testExpressionLexer() throws IOException, InvalidTokenException {
+    public void testExpressionLexer() throws IOException, IllegalLexemeException {
         // ARRANGE
         ExpressionLexer expressionLexer = new ExpressionLexer(inputString);
         // ACTION
-        Token<ExpressionTokenTag>[] observedTokens = expressionLexer.completeScan();
+        List<Token<ExpressionTokenTag>> observedTokens = expressionLexer.completeScan();
         // ASSERT
-        Assert.assertTrue(Token.fuzzyArrayEquals(observedTokens, expectedTokens));
+        Assert.assertTrue(Token.fuzzyListEquals(observedTokens, expectedTokens));
     }
 }

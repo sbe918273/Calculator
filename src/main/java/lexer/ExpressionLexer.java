@@ -1,8 +1,11 @@
 package lexer;
+import lexer.token.*;
+
 import java.io.Reader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A class to represent a lexer that reads an expression to generate tokens with attributes.
@@ -41,6 +44,22 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
         this.reader = reader;
         // initialise `peek` to be the input's first character
         readCharacter();
+    }
+
+    /**
+     * @return the number of the current line
+     */
+    @Override
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    /**
+     * @return the number of the current character on its line
+     */
+    @Override
+    public int getCharacterNumber() {
+        return characterNumber;
     }
 
     /**
@@ -107,11 +126,13 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
         while (peek != null && Character.isDigit(peek)) {
             // throw a `LeadingZeroException` if characters appear after a first character of '0'
             if (isZero) {
-                throw new LeadingZeroException(String.format(
-                    "[ExpressionLexer:getInteger %d:%d] Illegal leading zero.",
+                throw new LeadingZeroException(
+                    "ExpressionLexer",
+                    "getInteger",
                     lineNumber,
-                    characterNumber
-                ));
+                    characterNumber,
+                    "Illegal leading zero."
+                );
             }
             // recognise the current character as an additional digit of `value`
             value = 10 * value + Character.digit(peek, 10);
@@ -139,11 +160,13 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
         if (integer == null) {
             // throw a `MissingIntegerException` iff there is a sign with no following integer
             if (sign != null) {
-                throw new MissingIntegerException(String.format(
-                "[ExpressionLexer:getOptionalSignedInteger %d:%d] Sign without a following integer.",
+                throw new MissingIntegerException(
+                "ExpressionLexer",
+                "getOptionalSignedInteger",
                 lineNumber,
-                characterNumber
-            ));
+                characterNumber,
+                "Sign without a following integer"
+            );
             }
             // return `null` iff there is neither a sign nor an integer
             return null;
@@ -215,11 +238,13 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
         if (integer == null) {
             if (fractional && fraction == null) {
                 // throw an `EmptyNumberException` iff the number is fractional and both its parts are empty
-                throw new EmptyNumberException(String.format(
-                    "[ExpressionLexer:getNumberToken %d:%d] Illegal empty number.",
+                throw new EmptyNumberException(
+                    "ExpressionLexer",
+                    "getNumberToken",
                     lineNumber,
-                    characterNumber
-                ));
+                    characterNumber,
+                    "Illegal empty number."
+                );
             } else if (!fractional) {
                 // return a nonnull sign token iff the number is signed, empty and not fractional
                 // Note that, in this case, `peek` has advanced exactly one space beyond the initial sign character.
@@ -239,11 +264,13 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
             exponent = getOptionalSignedInteger();
             // throw a `MissingIntegerException` if no integer follows 'e'
             if (exponent == null) {
-                throw new MissingIntegerException(String.format(
-                    "[ExpressionLexer:getNumberToken %d:%d] Missing exponent after 'e'.",
+                throw new MissingIntegerException(
+                    "ExpressionLexer",
+                    "getNumberToken",
                     lineNumber,
-                    characterNumber
-                ));
+                    characterNumber,
+                    "Missing exponent after 'e'."
+                );
             }
         }
 
@@ -308,11 +335,13 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
         }
         // throw an `IncompleteCosineException` iff 'c' is not a prefix to "cos"
         if (!(readCharacter('o') && readCharacter('s'))) {
-            throw new IncompleteCosineException(String.format(
-                "[ExpressionLexer:getOptionalCosineToken %d:%d] 'c' should be a prefix to \"cos\".",
+            throw new IncompleteCosineException(
+                "ExpressionLexer",
+                "getOptionalCosineToken",
                 lineNumber,
-                characterNumber
-            ));
+                characterNumber,
+                "'c' should be a prefix to \"cos\"."
+            );
         }
         // advance peek
         readCharacter();
@@ -324,9 +353,9 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
      * Returns `null` if the lexer reaches its input's end.
      * @return a found token
      * @throws IOException the reader throws an IO exception
-     * @throws InvalidTokenException the current input produces an invalid token
+     * @throws IllegalLexemeException the current input produces an invalid token
      */
-    public Token<ExpressionTokenTag> scan() throws IOException, InvalidTokenException {
+    public Token<ExpressionTokenTag> scan() throws IOException, IllegalLexemeException {
         // skip all whitespace
         skipWhitespace();
 
@@ -347,11 +376,14 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
         if (token == null) { token = getOptionalCosineToken(); }
         // We throw an `IllegalCharacterException` if the current character is a prefix to no lexemes.
         if (token == null) {
-            throw new IllegalCharacterException(String.format(
-                "[ExpressionLexer:scan %d:%d] Illegal character",
+            throw new IllegalCharacterException(
+                "ExpressionLexer",
+                "scan",
                 lineNumber,
-                characterNumber
-        )); }
+                characterNumber,
+                "Illegal character."
+            );
+        }
 
         // set `wasNumber` iff the token is a number token
         wasNumber = token.getTag().equals(ExpressionTokenTag.NUMBER);
@@ -362,9 +394,9 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
      * Generates all the tokens from the current input.
      * @return the resulting array of tokens
      * @throws IOException the reader throws an IO exception
-     * @throws InvalidTokenException the current input produces an invalid token
+     * @throws IllegalLexemeException the current input produces an invalid token
      */
-    public Token<ExpressionTokenTag>[] completeScan() throws IOException, InvalidTokenException {
+    public List<Token<ExpressionTokenTag>> completeScan() throws IOException, IllegalLexemeException {
         // initialise the list of tokens to be empty
         ArrayList<Token<ExpressionTokenTag>> tokens = new ArrayList<>();
         // push all nonnull tokens to `tokens`
@@ -373,6 +405,6 @@ public class ExpressionLexer implements Lexer<ExpressionTokenTag> {
             tokens.add(currentToken);
             currentToken = scan();
         }
-        return tokens.toArray(new Token[0]);
+        return tokens;
     }
 }

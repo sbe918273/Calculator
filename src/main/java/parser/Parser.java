@@ -1,13 +1,18 @@
 package parser;
 
-import lexer.ExpressionTokenTag;
-import lexer.InvalidTokenException;
-import lexer.Lexer;
-import lexer.Token;
-
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Stack;
+
+import lexer.IllegalLexemeException;
+import lexer.Lexer;
+import lexer.token.Token;
+
+import main.UnpositionedException;
+import parser.production.Production;
+import parser.symbol.Nonterminal;
+import parser.symbol.Symbol;
+import parser.symbol.Terminal;
 
 /**
  * A class for an SLR parser.
@@ -16,7 +21,7 @@ import java.util.Stack;
  */
 public abstract class Parser<TerminalTag, NonterminalTag> {
     // the lexer from which the parser receives tokens
-    private final Lexer<TerminalTag> lexer;
+    protected final Lexer<TerminalTag> lexer;
     // a stack of states representing the state of the parser's automaton
     protected final Stack<State<TerminalTag, NonterminalTag>> stateStack;
     // a stack of symbols corresponding element-wise to the states in `stateStack`
@@ -46,9 +51,13 @@ public abstract class Parser<TerminalTag, NonterminalTag> {
      * Implements the SLR algorithm by driving `initialise`'s resulting automaton.
      * @return the parse tree (as a `Nonterminal` object)
      * @throws IOException the lexer throws an IO exception
-     * @throws InvalidTokenException the lexer throws an `InvalidTokenException`
+     * @throws IllegalLexemeException the lexer throws an `IllegalLexemeException`
      */
-    public Nonterminal<TerminalTag, NonterminalTag> run() throws IOException, InvalidTokenException {
+    public Nonterminal<TerminalTag, NonterminalTag> run() throws
+        IOException,
+        IllegalLexemeException,
+        IllegalTokenException
+    {
         // initialise the parser's state
         initialise();
 
@@ -73,9 +82,9 @@ public abstract class Parser<TerminalTag, NonterminalTag> {
     /**
      * Advances the current token.
      * @throws IOException the lexer throws an IO exception
-     * @throws InvalidTokenException the lexer throws an `InvalidTokenException`
+     * @throws IllegalLexemeException the lexer throws an `IllegalLexemeException`
      */
-    protected void advanceToken() throws IOException, InvalidTokenException {
+    protected void advanceToken() throws IOException, IllegalLexemeException {
         token = lexer.scan();
     }
 
@@ -106,45 +115,132 @@ public abstract class Parser<TerminalTag, NonterminalTag> {
         /**
          * Executes this action. Pushes the next state to the stack and advances the current token.
          * @throws IOException the lexer's reader throws an IO exception
-         * @throws InvalidTokenException the lexer encounters an invalid token
+         * @throws IllegalLexemeException the lexer encounters an invalid token
          */
         @Override
-        public void execute() throws IOException, InvalidTokenException {
+        public void execute() throws IOException, IllegalLexemeException {
             // push the next state to the stack
             stateStack.push(nextState);
             // construct a terminal from the current token and push it to the symbol stack
             symbolStack.push(new Terminal<>(getToken()));
             // advance the token
             advanceToken();
-        };
+        }
     }
 
     /**
-     * A class to represent a reduce action.
+     * A class to represent a reduce action that combines symbols on the stack to form a production's nonterminal head.
      */
     protected class ReduceAction extends OptionallyNamed implements Action {
 
         private final Production<TerminalTag, NonterminalTag> production;
 
+        /**
+         * A constructor to initialise this action's corresponding production.
+         * The action's name is "[REDUCE `production`]".
+         * @param production the production by which to combine symbols on the stack
+         */
         public ReduceAction(Production<TerminalTag, NonterminalTag> production) {
             super(String.format("[REDUCE %s]", production.toString()));
             this.production = production;
         }
 
+        /**
+         * Executes this action. Combines top symbols on the stack to form the head of this action's production.
+         */
         @Override
         public void execute() {
+            // collect as many symbols from the top of stack as the `production`'s length
             LinkedList<Symbol<TerminalTag, NonterminalTag>> children = new LinkedList<>();
-
             for (int index = 0; index < production.getLength(); index++) {
                 stateStack.pop();
                 children.push(symbolStack.pop());
             }
 
+            // retrieve the next state after encountering `production`'s head and push it onto the stack
             NonterminalTag productionTag = production.getTag();
             State<TerminalTag, NonterminalTag> nextState = stateStack.peek().getNextState(productionTag);
             stateStack.push(nextState);
-            // construct a nonterminal from the production's tag and the popped symbols and push it to the symbol stack
-            symbolStack.push(new Nonterminal<>(productionTag, children));
+
+            // construct a nonterminal from the symbol sequence and push it to the symbol stack
+            Nonterminal<TerminalTag, NonterminalTag> parentNonterminal = production.createNonterminal(children);
+            symbolStack.push(parentNonterminal);
+        }
+    }
+
+    /**
+     * A class to represent an exception action (an action that throws an `IllegalTokenException`).
+     */
+    protected abstract class ExceptionAction extends OptionallyNamed implements Action {
+
+        /**
+         * Initialises this action's name to be "[EXCEPTION `exceptionName`]".
+         * @param exceptionName the name of this action's exception
+         */
+        public ExceptionAction(String exceptionName) {
+            super(String.format("[EXCEPTION %s]", exceptionName));
+        }
+    }
+
+    protected class ExpectedOperatorExceptionAction extends ExceptionAction {
+
+        // the description of this action's exception
+        private final String description;
+
+        /**
+         * Initialises this action's description. The action's name is "[EXCEPTION ExceptedOperatorException]".
+         * @param description this action's description
+         */
+        public ExpectedOperatorExceptionAction(String description) {
+            super("ExpectedOperatorException");
+            this.description = description;
+        }
+
+        /**
+         * Executes this action by throwing an `ExpectedOperatorException` that includes this action's description and
+         * the lexer's current line and character numbers.
+         * @throws ExpectedOperatorException this action always throws an `ExpectedOperatorException`
+         */
+        @Override
+        public void execute() throws ExpectedOperatorException {
+            throw new ExpectedOperatorException(
+                "ExpectedOperatorExceptionAction",
+                "execute",
+                lexer.getLineNumber(),
+                lexer.getCharacterNumber(),
+                description
+            );
+        }
+    }
+
+    protected class ExpectedOperandExceptionAction extends ExceptionAction {
+
+        // the description of this action's exception
+        private final String description;
+
+        /**
+         * Initialises this action's description. The action's name is "[EXCEPTION ExpectedOperandException]".
+         * @param description this action's description
+         */
+        public ExpectedOperandExceptionAction(String description) {
+            super("ExpectedOperandException");
+            this.description = description;
+        }
+
+        /**
+         * Executes this action by throwing an `ExpectedOperandException` that includes this action's description and
+         * the lexer's current line and character numbers.
+         * @throws ExpectedOperandException this action always throws an `ExpectedOperandException`
+         */
+        @Override
+        public void execute() throws ExpectedOperandException {
+            throw new ExpectedOperandException(
+                    "ExpectedOperandExceptionAction",
+                    "execute",
+                    lexer.getLineNumber(),
+                    lexer.getCharacterNumber(),
+                    description
+            );
         }
     }
 

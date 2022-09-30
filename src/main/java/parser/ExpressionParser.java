@@ -1,49 +1,37 @@
 package parser;
 
-import lexer.ExpressionTokenTag;
-import lexer.InvalidTokenException;
-import lexer.ExpressionLexer;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import lexer.Lexer;
+import lexer.token.ExpressionTokenTag;
+import lexer.IllegalLexemeException;
+import lexer.ExpressionLexer;
+
+import parser.production.*;
+import parser.symbol.ExpressionNonterminal;
+import parser.symbol.ExpressionNonterminalTag;
+import parser.symbol.Nonterminal;
+
 public class ExpressionParser extends Parser<ExpressionTokenTag, ExpressionNonterminalTag> {
 
     private static final List<Production<ExpressionTokenTag, ExpressionNonterminalTag>> productions;
-    private static final int stateCount = 12;
 
     static {
-
-        Production<ExpressionTokenTag, ExpressionNonterminalTag> plusProduction = new Production<>(
-            "E -> E + E",
-                ExpressionNonterminalTag.EXPRESSION,
-                3
-        ) {
-            @Override
-            public Nonterminal<ExpressionTokenTag, ExpressionNonterminalTag> createNonterminal(
-                    List<Symbol<ExpressionTokenTag, ExpressionNonterminalTag>> children
-            ) {
-                // assert left is nonterminal
-                // assert middle is plus
-                // assert right is nonterminal
-                return super.createNonterminal(children);
-            }
-        };
-
         productions = List.of(
             // E -> E + E
-            new Production<>("0", ExpressionNonterminalTag.EXPRESSION, 3),
+            new PlusProduction(),
             // E -> E - E
-            new Production<>("1", ExpressionNonterminalTag.EXPRESSION, 3),
+            new MinusProduction(),
             // E -> E ^ E
-            new Production<>("2", ExpressionNonterminalTag.EXPRESSION, 3),
+            new PowerProduction(),
             // E -> cos E
-            new Production<>("3", ExpressionNonterminalTag.EXPRESSION, 2),
+            new CosineProduction(),
             // E -> E!
-            new Production<>("4", ExpressionNonterminalTag.EXPRESSION, 2),
+            new FactorialProduction(),
             // E -> number
-            new Production<>("5", ExpressionNonterminalTag.EXPRESSION, 1)
+            new NumberProduction()
         );
     }
 
@@ -51,85 +39,169 @@ public class ExpressionParser extends Parser<ExpressionTokenTag, ExpressionNonte
         this(new ExpressionLexer(inputString));
     }
 
-    public ExpressionParser(ExpressionLexer expressionLexer) {
+    public ExpressionParser(Lexer<ExpressionTokenTag> expressionLexer) {
         super(expressionLexer);
     }
 
     @Override
     protected void initialise() {
+        // initialise the state list to be empty
         final List<State<ExpressionTokenTag, ExpressionNonterminalTag>> states = new ArrayList<>();
-        for (int index = 0; index < stateCount; index++) {
-            states.add(new State<>(Integer.toString(index)));
-        }
 
-        // first state
+        // initialise the ... state's name and default error action
+        // first
+        states.add(new State<>(
+            "I_0",
+            new ExpectedOperandExceptionAction(
+                "Expected operand (number or prefix operator) at start of the input."
+            )
+        ));
+        // second
+        states.add(new State<>(
+            "I_1",
+            new ExpectedOperatorExceptionAction("Expected operator (infix or postfix) after an expression.")
+        ));
+        // third
+        states.add(new State<>(
+            "I_2",
+            new ExpectedOperandExceptionAction(
+                    "Expected operand (number or prefix operator) after cosine operator."
+            )
+        ));
+        // fourth
+        states.add(new State<>(
+            "I_3",
+            new ExpectedOperatorExceptionAction("Expected operator (infix or postfix) after number.")
+        ));
+        // fifth
+        states.add(new State<>(
+            "I_4",
+            new ExpectedOperandExceptionAction(
+                "Expected operand (number or prefix operator) after plus operator."
+            )
+        ));
+        // sixth
+        states.add(new State<>(
+            "I_5",
+            new ExpectedOperandExceptionAction(
+                "Expected operand (number or prefix operator) after minus operator."
+            )
+        ));
+        // seventh
+        states.add(new State<>(
+            "I_6",
+            new ExpectedOperandExceptionAction(
+                "Expected operand (number or prefix operator) after power operator."
+            )
+        ));
+        // eighth
+        states.add(new State<>(
+            "I_7",
+            new ExpectedOperatorExceptionAction(
+                "Expected operator (infix or postfix) after factorial operator."
+            )
+        ));
+        // ninth
+        states.add(new State<>(
+            "I_8",
+            new ExpectedOperatorExceptionAction(
+                "Expected operator (infix or postfix) after cosine expression."
+            )
+        ));
+        // tenth
+        states.add(new State<>(
+            "I_9",
+            new ExpectedOperatorExceptionAction(
+                "Expected operator (infix or postfix) after plus expression."
+            )
+        ));
+        // eleventh
+        states.add(new State<>(
+            "I_10",
+            new ExpectedOperatorExceptionAction(
+                "Expected operator (infix or postfix) after minus expression."
+            )
+        ));
+        // twelfth
+        states.add(new State<>(
+            "I_11",
+            new ExpectedOperatorExceptionAction(
+                "Expected operator (infix or postfix) after power expression."
+            )
+        ));
+
+        // initialise the ... state's actions and next states.
+        // See `table.jpg` for the corresponding SLR parsing table.
+
+        // first
         states.get(0).putAction(ExpressionTokenTag.COSINE, new ShiftAction(states.get(2)));
         states.get(0).putAction(ExpressionTokenTag.NUMBER, new ShiftAction(states.get(3)));
         states.get(0).putNextState(ExpressionNonterminalTag.EXPRESSION, states.get(1));
 
-        // second state
+        // second
         states.get(1).putAction(ExpressionTokenTag.PLUS, new ShiftAction(states.get(4)));
         states.get(1).putAction(ExpressionTokenTag.MINUS, new ShiftAction(states.get(5)));
         states.get(1).putAction(ExpressionTokenTag.POWER, new ShiftAction(states.get(6)));
         states.get(1).putAction(ExpressionTokenTag.FACTORIAL, new ShiftAction(states.get(7)));
         states.get(1).putAction(null, new AcceptAction());
 
-        // third state
+        // third
         states.get(2).putAction(ExpressionTokenTag.COSINE, new ShiftAction(states.get(2)));
         states.get(2).putAction(ExpressionTokenTag.NUMBER, new ShiftAction(states.get(3)));
         states.get(2).putNextState(ExpressionNonterminalTag.EXPRESSION, states.get(8));
 
-        // fourth state
+        // fourth
         states.get(3).putAction(ExpressionTokenTag.PLUS, new ReduceAction(productions.get(5)));
         states.get(3).putAction(ExpressionTokenTag.MINUS, new ReduceAction(productions.get(5)));
+        states.get(3).putAction(ExpressionTokenTag.POWER, new ReduceAction(productions.get(5)));
         states.get(3).putAction(ExpressionTokenTag.COSINE, new ReduceAction(productions.get(5)));
         states.get(3).putAction(ExpressionTokenTag.FACTORIAL, new ReduceAction(productions.get(5)));
         states.get(3).putAction(null, new ReduceAction(productions.get(5)));
 
-        // fifth state
+        // fifth
         states.get(4).putAction(ExpressionTokenTag.COSINE, new ShiftAction(states.get(2)));
         states.get(4).putAction(ExpressionTokenTag.NUMBER, new ShiftAction(states.get(3)));
         states.get(4).putNextState(ExpressionNonterminalTag.EXPRESSION, states.get(9));
 
-        // sixth state
+        // sixth
         states.get(5).putAction(ExpressionTokenTag.COSINE, new ShiftAction(states.get(2)));
         states.get(5).putAction(ExpressionTokenTag.NUMBER, new ShiftAction(states.get(3)));
         states.get(5).putNextState(ExpressionNonterminalTag.EXPRESSION, states.get(10));
 
-        // seventh state
+        // seventh
         states.get(6).putAction(ExpressionTokenTag.COSINE, new ShiftAction(states.get(2)));
         states.get(6).putAction(ExpressionTokenTag.NUMBER, new ShiftAction(states.get(3)));
         states.get(6).putNextState(ExpressionNonterminalTag.EXPRESSION, states.get(11));
 
-        // eighth state
+        // eighth
         states.get(7).putAction(ExpressionTokenTag.PLUS, new ReduceAction(productions.get(4)));
         states.get(7).putAction(ExpressionTokenTag.MINUS, new ReduceAction(productions.get(4)));
         states.get(7).putAction(ExpressionTokenTag.POWER, new ReduceAction(productions.get(4)));
         states.get(7).putAction(ExpressionTokenTag.FACTORIAL, new ReduceAction(productions.get(4)));
         states.get(7).putAction(null, new ReduceAction(productions.get(4)));
 
-        // ninth state
+        // ninth
         states.get(8).putAction(ExpressionTokenTag.PLUS, new ReduceAction(productions.get(3)));
         states.get(8).putAction(ExpressionTokenTag.MINUS, new ReduceAction(productions.get(3)));
         states.get(8).putAction(ExpressionTokenTag.POWER, new ReduceAction(productions.get(3)));
         states.get(8).putAction(ExpressionTokenTag.FACTORIAL, new ShiftAction(states.get(7)));
         states.get(8).putAction(null, new ReduceAction(productions.get(3)));
 
-        // tenth state
+        // tenth
         states.get(9).putAction(ExpressionTokenTag.PLUS, new ReduceAction(productions.get(0)));
         states.get(9).putAction(ExpressionTokenTag.MINUS, new ShiftAction(states.get(5)));
         states.get(9).putAction(ExpressionTokenTag.POWER, new ShiftAction(states.get(6)));
         states.get(9).putAction(ExpressionTokenTag.FACTORIAL, new ShiftAction(states.get(7)));
         states.get(9).putAction(null, new ReduceAction(productions.get(0)));
 
-        // eleventh state
+        // eleventh
         states.get(10).putAction(ExpressionTokenTag.PLUS, new ReduceAction(productions.get(1)));
         states.get(10).putAction(ExpressionTokenTag.MINUS, new ReduceAction(productions.get(1)));
         states.get(10).putAction(ExpressionTokenTag.POWER, new ShiftAction(states.get(6)));
         states.get(10).putAction(ExpressionTokenTag.FACTORIAL, new ShiftAction(states.get(7)));
-        states.get(10).putAction(null, new ReduceAction(productions.get(2)));
+        states.get(10).putAction(null, new ReduceAction(productions.get(1)));
 
-        // twelfth state
+        // twelfth
         states.get(11).putAction(ExpressionTokenTag.PLUS, new ReduceAction(productions.get(2)));
         states.get(11).putAction(ExpressionTokenTag.MINUS, new ReduceAction(productions.get(2)));
         states.get(11).putAction(ExpressionTokenTag.POWER, new ShiftAction(states.get(6)));
@@ -143,7 +215,11 @@ public class ExpressionParser extends Parser<ExpressionTokenTag, ExpressionNonte
         symbolStack.add(null);
     }
 
-    public static ExpressionNonterminal parse(String inputString) throws IOException, InvalidTokenException {
+    public static ExpressionNonterminal parse(String inputString) throws
+        IOException,
+        IllegalLexemeException,
+        IllegalTokenException
+    {
         ExpressionParser expressionParser = new ExpressionParser(inputString);
         Nonterminal<ExpressionTokenTag, ExpressionNonterminalTag> nonterminal = expressionParser.run();
         if (nonterminal instanceof ExpressionNonterminal expressionNonterminal) {

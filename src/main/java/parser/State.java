@@ -11,35 +11,40 @@ import java.util.HashMap;
  */
 public class State<TerminalTag, NonterminalTag> extends OptionallyNamed {
 
+    // this state's default action
+    private final Action defaultAction;
     // a mapping from token tags to actions
     private final HashMap<TerminalTag, Action> actions;
     // a mapping from nonterminal tags to next states
     private final HashMap<NonterminalTag, State<TerminalTag, NonterminalTag>> nextStates;
 
     /**
-     * Initialises both mappings to be empty hashmaps. The state has no name.
-     */
-    public State() {
-        this(null);
-    }
-
-    /**
      * Initialises this state's name to be that provided and both mappings to be empty hashmaps.
      * @param name this state's name
      */
-    public State(String name) {
+    public State(String name, Action defaultAction) {
         super(name);
+        this.defaultAction = defaultAction;
         actions = new HashMap<>();
         nextStates = new HashMap<>();
     }
 
     /**
-     * Retrieves the action for a token tag.
+     * @return this state's default action
+     */
+    public Action getDefaultAction() {
+        return defaultAction;
+    }
+
+    /**
+     * Retrieves the action for a token tag. Fetches the default action if no action has been specified for a tag.
      * @param terminalTag a token tag
      * @return an action
      */
     public Action getAction(TerminalTag terminalTag) {
-        return actions.get(terminalTag);
+        Action action = actions.get(terminalTag);
+        // return the default action if the retrieved action is `null`
+        return (action == null) ? defaultAction : action;
     }
 
     /**
